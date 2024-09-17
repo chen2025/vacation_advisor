@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">vacation_advisor</string>
+    <string name="label_prompt">Prompt</string>
+</resources>
