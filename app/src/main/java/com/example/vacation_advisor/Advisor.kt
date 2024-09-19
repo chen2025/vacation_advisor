@@ -1,11 +1,38 @@
 package com.example.vacation_advisor
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
@@ -13,9 +40,22 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+
+/* Documentation:
+Vacation Advisor leverages AI and allows users to find the best vacation spot in the U.S. by selecting their preferred travel month, budget, and style.
+
+Month selection: A slider to choose the desired month of travel (1-12).
+Travel budget: A dropdown menu to select the level of vacation budget (Economy, Moderate, Comfort, Luxury).
+Trip type: Radio buttons to choose the type of trip (Beach, Adventure, Cultural & Historical, Wellness, City Life).
+
+When the user clicks the "Find My Destination" button, an alert dialog informs the user that the AI may make mistakes.
+After the user confirms "I understand," the app sends a prompt to Gemini with the selected criteria.
+Gemini sends back a response with the best US city to visit based on the user's preferences.
+ */
 
 @Composable
 fun FindDestination(
@@ -70,7 +110,8 @@ fun FindDestination(
                     .padding(8.dp)
             ) {
                 Text(
-                    text = "Vacation Destination Advisor",
+                    text = "U.S. Vacation Destination Advisor",
+                    fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.align(Alignment.Center),
                     color = MaterialTheme.colorScheme.onSurface
@@ -81,22 +122,35 @@ fun FindDestination(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
                     .background(
                         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
                         shape = RoundedCornerShape(12.dp)
                     )
-                    .padding(8.dp)
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Select Month", style = MaterialTheme.typography.bodyLarge)
+                Column(
+                    modifier = Modifier.padding(
+                        start = 30.dp,
+                        end = 30.dp,
+                        top = 10.dp,
+                        bottom = 10.dp
+                    ),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "Select Month",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                     Slider(
                         value = month.toFloat(),
                         onValueChange = { month = it.toInt() },
                         valueRange = 1f..12f,
                         steps = 11
                     )
-                    Text("Month: $month")
+                    Text(
+                        "Month: $month",
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             }
 
@@ -114,7 +168,11 @@ fun FindDestination(
                 contentAlignment = Alignment.Center // Center everything vertically and horizontally
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Select Budget", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        "Select Budget",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -133,6 +191,7 @@ fun FindDestination(
                     ) {
                         Text(
                             text = budget,
+                            fontWeight = FontWeight.Bold,
                             modifier = Modifier.align(Alignment.Center),
                             style = MaterialTheme.typography.bodyLarge
                         )
@@ -146,7 +205,12 @@ fun FindDestination(
                     ) {
                         budgetOptions.forEach { selectionOption ->
                             DropdownMenuItem(
-                                text = { Text(selectionOption) },
+                                text = {
+                                    Text(
+                                        selectionOption,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                },
                                 onClick = {
                                     budget = selectionOption
                                     expanded = false
@@ -156,7 +220,6 @@ fun FindDestination(
                     }
                 }
             }
-
 
 
             // Type Options Panel
@@ -179,7 +242,11 @@ fun FindDestination(
                         modifier = Modifier.fillMaxWidth(), // Take full width to allow text to be centered
                         contentAlignment = Alignment.Center // Center the title text
                     ) {
-                        Text("Select Type", style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            "Select Type",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                        )
                     }
 
                     // Keep the radio buttons aligned to the start
@@ -189,7 +256,10 @@ fun FindDestination(
                                 selected = (text == typeSelectedOption),
                                 onClick = { typeSelectedOption = text }
                             )
-                            Text(text)
+                            Text(
+                                text,
+                                fontWeight = FontWeight.Bold,
+                            )
                         }
                     }
                 }
@@ -239,7 +309,8 @@ fun FindDestination(
                                 dialogStatus = false
 
                                 // Get the month name from the map using the month integer
-                                val monthName = monthMap[month] ?: "Unknown month" // Fallback in case month is out of range
+                                val monthName = monthMap[month]
+                                    ?: "Unknown month" // Fallback in case month is out of range
 
                                 prompt =
                                     "I want to go on a $budget vacation in $monthName to a $typeSelectedOption destination. " +
@@ -256,8 +327,7 @@ fun FindDestination(
             }
 
             // Result Panel
-            if (uiState is UiState.Loading)
-            {
+            if (uiState is UiState.Loading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             } else {
                 var textColor = MaterialTheme.colorScheme.onSurface
@@ -287,12 +357,14 @@ fun FindDestination(
 
                     Text(
                         text = cityName,
+                        fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                         color = textColor,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                     Text(
                         text = result,
+                        fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Start,
                         color = textColor,
                         modifier = Modifier
